@@ -99,6 +99,9 @@ button {cursor:pointer;background:none;border:none;padding:0;outline:none;}
   </div>
 </div>
 
+<!-- Include your AudioRead.js script -->
+<script src="scripts/AudioRead.js"></script>
+
 <script>
 // Sidebar toggle
 const menuToggle = document.getElementById("menu-toggle");
@@ -108,7 +111,7 @@ menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 // Audio
 const audio = new Audio();
 let currentIndex = 0;
-let tracks = []; 
+let tracks = songs || []; // Use the songs from AudioRead.js
 
 const content = document.getElementById("content");
 const searchInput = document.getElementById("search");
@@ -132,16 +135,7 @@ const fpPrev = document.getElementById("fp-prev");
 const fpNext = document.getElementById("fp-next");
 const fpProgress = document.getElementById("fp-progress");
 
-// Load songs.json
-fetch('scripts/AudioRead.js')
-  .then(res=>res.json())
-  .then(data=>{
-    tracks = data || [];
-    renderTracks(tracks);
-    if(tracks.length>0) loadSong(0);
-  })
-  .catch(err=>console.error("Failed to load songs.json",err));
-
+// Render track buttons
 function renderTracks(trackList){
   content.innerHTML = '';
   trackList.forEach((t,index)=>{
@@ -154,6 +148,7 @@ function renderTracks(trackList){
   });
 }
 
+// Load song data
 function loadSong(index){
   currentIndex = index;
   const song = tracks[index];
@@ -166,6 +161,7 @@ function loadSong(index){
   fpArtist.textContent = song.artist;
 }
 
+// Play/Pause
 function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;}
 function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;}
 function prevSong(){currentIndex=(currentIndex-1+tracks.length)%tracks.length;loadSong(currentIndex);playSong();}
@@ -206,6 +202,10 @@ searchInput.addEventListener('input',()=>{
     t.btn.style.display = (t.title.toLowerCase() + t.artist.toLowerCase()).includes(q)?'block':'none';
   });
 });
+
+// Initialize
+renderTracks(tracks);
+if(tracks.length>0) loadSong(0);
 </script>
 
 </body>
