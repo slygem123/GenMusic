@@ -5,13 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GenMusic Player</title>
 <style>
-/* Styles are similar to previous version, omitted for brevity */
+* {margin:0;padding:0;box-sizing:border-box;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+body {background:#fff;color:#000;overflow-x:hidden;position:relative;}
+button {cursor:pointer;background:none;border:none;padding:0;outline:none;}
+/* Sidebar */
+#sidebar {position:fixed;top:0;left:-250px;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;z-index:100;}
+#sidebar.show {left:0;}
+#sidebar h1 {font-size:24px;margin-bottom:30px;}
+#sidebar nav a {text-decoration:none;color:#000;font-weight:500;margin:10px 0;display:block;transition:0.2s;}
+#sidebar nav a:hover {color:#0071e3;transform:scale(1.05);}
+/* Main */
+#main {margin-left:0;height:100vh;display:flex;flex-direction:column;transition:0.3s;}
+#topbar {height:60px;border-bottom:1px solid #ccc;display:flex;align-items:center;padding:0 20px;justify-content:space-between;}
+#search input {padding:6px 12px;border-radius:12px;border:1px solid #ccc;width:100%;}
+/* Track list */
+#content {flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;}
+.track-button {padding:12px 15px;background:#f2f2f7;border-radius:12px;cursor:pointer;transition:transform 0.2s, background 0.2s;}
+.track-button:hover {transform:scale(1.02);background:#e0e0e0;}
+/* Now Playing mini bar */
+#now-playing-bar {position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #ccc;display:flex;align-items:center;padding:0 15px;justify-content:space-between;cursor:pointer;transition:transform 0.3s, opacity 0.3s;}
+#now-playing-bar.hidden {opacity:0;transform:translateY(100%);}
+#now-playing-bar .info {display:flex;align-items:center;gap:10px;}
+#now-playing-bar .info img {width:40px;height:40px;border-radius:6px;}
+#now-playing-bar .controls svg {width:24px;height:24px;fill:#000;transition:0.2s;}
+#now-playing-bar .controls svg:hover {fill:#0071e3;transform:scale(1.2);}
+/* Full screen now playing */
+#full-player {position:fixed;top:100%;left:0;width:100%;height:100%;background:#fff;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;}
+#full-player.show {top:0;}
+#full-player img {width:100%;max-width:400px;margin:0 auto;border-radius:12px;}
+#full-player .controls {display:flex;justify-content:center;align-items:center;gap:30px;margin-top:20px;}
+#full-player .controls svg {width:40px;height:40px;fill:#000;transition:0.2s;}
+#full-player .controls svg:hover {fill:#0071e3;transform:scale(1.2);}
+#full-player .progress-container {width:100%;height:5px;background:#ddd;border-radius:2px;margin:20px 0;position:relative;cursor:pointer;}
+#full-player .progress {height:100%;background:#0071e3;width:0%;border-radius:2px;}
+/* Mobile menu toggle */
+#menu-toggle {display:none;font-size:24px;cursor:pointer;}
+@media (max-width:768px){
+    #menu-toggle {display:block;}
+}
 </style>
 </head>
 <body>
 
-<!-- Sidebar, main content, now playing bar, full player same as before -->
-
+<!-- Sidebar -->
 <div id="sidebar">
   <h1>GenMusic</h1>
   <nav>
@@ -19,16 +55,18 @@
   </nav>
 </div>
 
+<!-- Main -->
 <div id="main">
   <div id="topbar">
-    <button id="menu-toggle">☰</button>
-    <div style="flex:1;margin-left:10px;">
-      <input type="text" id="search" placeholder="Search music...">
-    </div>
+    <button id="menu-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"><path d="M3 6h18M3 12h18M3 18h18" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div style="flex:1;margin-left:10px;"><input type="text" id="search" placeholder="Search music..."></div>
   </div>
   <div id="content"></div>
 </div>
 
+<!-- Now Playing Mini Bar -->
 <div id="now-playing-bar" class="hidden">
   <div class="info">
     <img src="" alt="cover" id="np-cover">
@@ -44,6 +82,7 @@
   </div>
 </div>
 
+<!-- Full Player -->
 <div id="full-player">
   <div>
     <img src="" alt="cover" id="fp-cover">
@@ -66,15 +105,15 @@ const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
 menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 
-// Audio setup
+// Audio
 const audio = new Audio();
 let currentIndex = 0;
-let tracks = [];
+let tracks = []; 
 
 const content = document.getElementById("content");
 const searchInput = document.getElementById("search");
 
-// Now playing
+// Now Playing
 const npBar = document.getElementById("now-playing-bar");
 const npCover = document.getElementById("np-cover");
 const npTitle = document.getElementById("np-title");
@@ -97,10 +136,11 @@ const fpProgress = document.getElementById("fp-progress");
 fetch('AudioRead/songs.json')
   .then(res=>res.json())
   .then(data=>{
-    tracks = data;
+    tracks = data || [];
     renderTracks(tracks);
-    loadSong(0);
-  });
+    if(tracks.length>0) loadSong(0);
+  })
+  .catch(err=>console.error("Failed to load songs.json",err));
 
 function renderTracks(trackList){
   content.innerHTML = '';
@@ -126,20 +166,17 @@ function loadSong(index){
   fpArtist.textContent = song.artist;
 }
 
-// Controls
 function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;}
 function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;}
 function prevSong(){currentIndex=(currentIndex-1+tracks.length)%tracks.length;loadSong(currentIndex);playSong();}
 function nextSong(){currentIndex=(currentIndex+1)%tracks.length;loadSong(currentIndex);playSong();}
 
-// Mini bar
+// Mini bar controls
 npPlay.addEventListener("click",e=>{e.stopPropagation();audio.paused?playSong():pauseSong();});
 npPrev.addEventListener("click",e=>{e.stopPropagation();prevSong();});
 npNext.addEventListener("click",e=>{e.stopPropagation();nextSong();});
-npBar.addEventListener("click",()=>{fp.classList.add("show");});
-fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
 
-// Full player
+// Full player controls
 fpPlay.addEventListener("click",()=>{audio.paused?playSong():pauseSong();});
 fpPrev.addEventListener("click",prevSong);
 fpNext.addEventListener("click",nextSong);
@@ -147,9 +184,13 @@ fpNext.addEventListener("click",nextSong);
 // Show mini bar
 function showNowPlayingBar(){npBar.classList.remove("hidden");}
 
-// Progress
+// Open full player
+npBar.addEventListener("click",()=>{fp.classList.add("show");});
+fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
+
+// Update progress
 audio.addEventListener("timeupdate",()=>{
-  const percent = (audio.currentTime/audio.duration)*100;
+  const percent = (audio.currentTime/audio.duration)*100 || 0;
   fpProgress.style.width = percent+"%";
 });
 fp.querySelector(".progress-container").addEventListener("click",(e)=>{
@@ -158,7 +199,7 @@ fp.querySelector(".progress-container").addEventListener("click",(e)=>{
   audio.currentTime = (clickX/width)*audio.duration;
 });
 
-// Search
+// Search functionality
 searchInput.addEventListener('input',()=>{
   const q = searchInput.value.toLowerCase();
   tracks.forEach(t=>{
@@ -166,5 +207,6 @@ searchInput.addEventListener('input',()=>{
   });
 });
 </script>
+
 </body>
 </html>
