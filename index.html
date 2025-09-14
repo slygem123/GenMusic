@@ -8,54 +8,180 @@
     body {
       margin: 0;
       font-family: "Helvetica Neue", sans-serif;
-      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: linear-gradient(135deg, #1e1e1e, #3c3c3c);
+      color: white;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
       padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      width: 100%;
-      max-width: 600px;
+      gap: 15px;
+      padding: 0 15px 20px 15px;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255,255,255,0.1);
       backdrop-filter: blur(15px);
       border-radius: 20px;
-      padding: 30px 15px;
+      padding: 15px;
       text-align: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
       cursor: pointer;
       transition: transform 0.2s, background 0.2s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .card img {
+      width: 100%;
+      border-radius: 15px;
+      margin-bottom: 10px;
     }
 
     .card:hover {
       transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255,255,255,0.2);
+    }
+
+    .playlist {
+      padding: 0 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .song {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 10px 15px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .song:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .song button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .back-button {
+      margin: 15px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 15px;
+      padding: 10px 15px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      background: rgba(255,255,255,0.3);
     }
   </style>
 </head>
 <body>
-  <div class="grid">
-    <div class="card" onclick="openSection('billie')">💚 Billie Eilish</div>
-    <div class="card" onclick="openSection('liked')">❤️ Liked Songs</div>
-    <div class="card" onclick="openSection('ayesha')">💖 Ayesha Erotica</div>
-    <div class="card" onclick="openSection('melanie')">🍼 Melanie Martinez</div>
+
+  <header>My Music App</header>
+
+  <div id="home" class="grid">
+    <div class="card" onclick="openSection('billie')">
+      <img src="billie.jpg" alt="Billie Eilish">
+      Billie Eilish
+    </div>
+    <div class="card" onclick="openSection('liked')">
+      <img src="liked.jpg" alt="Liked Songs">
+      Liked Songs
+    </div>
+    <div class="card" onclick="openSection('ayesha')">
+      <img src="ayesha.jpg" alt="Ayesha Erotica">
+      Ayesha Erotica
+    </div>
+    <div class="card" onclick="openSection('melanie')">
+      <img src="melanie.jpg" alt="Melanie Martinez">
+      Melanie Martinez
+    </div>
   </div>
 
+  <div id="artistPage" style="display:none; flex-direction: column;">
+    <button class="back-button" onclick="goHome()">⬅ Back</button>
+    <h2 id="artistTitle" style="text-align:center; margin:10px 0;"></h2>
+    <div class="playlist" id="playlist"></div>
+  </div>
+
+  <audio id="audio"></audio>
+
   <script>
+    const sections = {
+      billie: [
+        { title: "bad guy", file: "badguy.mp3" },
+        { title: "bury a friend", file: "buryafriend.mp3" }
+      ],
+      ayesha: [
+        { title: "lick it", file: "lickit.mp3" },
+        { title: "daddy", file: "daddy.mp3" }
+      ],
+      melanie: [
+        { title: "cry baby", file: "crybaby.mp3" },
+        { title: "pity party", file: "pityparty.mp3" }
+      ],
+      liked: [
+        { title: "favorite 1", file: "fav1.mp3" },
+        { title: "favorite 2", file: "fav2.mp3" }
+      ]
+    };
+
     function openSection(name) {
-      alert("Open " + name + " page (we’ll add real navigation next!)");
+      document.getElementById("home").style.display = "none";
+      document.getElementById("artistPage").style.display = "flex";
+      document.getElementById("artistTitle").innerText = name.charAt(0).toUpperCase() + name.slice(1);
+      const playlistDiv = document.getElementById("playlist");
+      playlistDiv.innerHTML = "";
+
+      sections[name].forEach(song => {
+        const div = document.createElement("div");
+        div.className = "song";
+        div.innerHTML = `<span>${song.title}</span> <button onclick="playSong('${song.file}')">▶️</button>`;
+        playlistDiv.appendChild(div);
+      });
+    }
+
+    function goHome() {
+      document.getElementById("artistPage").style.display = "none";
+      document.getElementById("home").style.display = "grid";
+      document.getElementById("audio").pause();
+    }
+
+    function playSong(file) {
+      const audio = document.getElementById("audio");
+      audio.src = file;
+      audio.play();
     }
   </script>
+
 </body>
 </html>
