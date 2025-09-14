@@ -7,7 +7,7 @@
 <style>
 /* Reset & base */
 * {margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-body {background:#fff;color:#000;overflow-x:hidden;}
+body {background:#fff;color:#000;overflow-x:hidden;position:relative;}
 button {cursor:pointer;background:none;border:none;outline:none;}
 
 /* Sidebar */
@@ -38,9 +38,14 @@ button {cursor:pointer;background:none;border:none;outline:none;}
 #now-playing-bar .controls svg:hover{fill:#0071e3;transform:scale(1.2);}
 
 /* Full screen player */
-#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:#fff;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;}
+#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:#fff;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;overflow-y:auto;}
 #full-player.show{top:0;}
-#full-player img{width:80%;max-width:400px;margin:20px auto;border-radius:16px;transition:all 0.3s;}
+#full-player-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background-size:cover;background-position:center;filter:blur(30px) brightness(0.5);transition:background-image 0.5s ease;}
+#full-player-gradient{position:fixed;top:0;left:0;width:100%;height:100%;z-index:60;pointer-events:none;background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,45,85,0.3));mix-blend-mode:overlay;animation:gradientShift 10s infinite alternate;}
+@keyframes gradientShift{0%{background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,45,85,0.3));}50%{background:linear-gradient(120deg, rgba(255,45,85,0.3), rgba(255,149,0,0.3));}100%{background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,149,0,0.3));}}
+
+/* Full player content */
+#full-player img{display:block;margin:20px auto;width:80%;max-width:400px;border-radius:16px;object-fit:cover;transition:all 0.3s;}
 #full-player .controls{display:flex;justify-content:center;align-items:center;gap:40px;margin-top:25px;}
 #full-player .controls svg{width:44px;height:44px;fill:#000;transition:0.2s;}
 #full-player .controls svg:hover{fill:#0071e3;transform:scale(1.2);}
@@ -58,23 +63,28 @@ button {cursor:pointer;background:none;border:none;outline:none;}
 </head>
 <body>
 
+<!-- Background & Gradient -->
+<div id="full-player-bg"></div>
+<div id="full-player-gradient"></div>
+
+<!-- Sidebar -->
 <div id="sidebar">
   <h1>GenMusic</h1>
   <nav><a href="#">Library</a></nav>
 </div>
 
+<!-- Main -->
 <div id="main">
   <div id="topbar">
     <button id="menu-toggle">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28">
-        <path d="M3 6h18M3 12h18M3 18h18" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"><path d="M3 6h18M3 12h18M3 18h18" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <div style="flex:1;margin-left:10px;"><input type="text" id="search" placeholder="Search music..."></div>
   </div>
   <div id="content"></div>
 </div>
 
+<!-- Now Playing Mini Bar -->
 <div id="now-playing-bar" class="hidden">
   <div class="info">
     <img src="" alt="cover" id="np-cover">
@@ -87,16 +97,15 @@ button {cursor:pointer;background:none;border:none;outline:none;}
   </div>
 </div>
 
+<!-- Full Player -->
 <div id="full-player">
-  <div>
-    <img src="" alt="cover" id="fp-cover">
-    <h2 id="fp-title" style="text-align:center;margin-top:15px;">Title</h2>
-    <p id="fp-artist" style="text-align:center;color:#555;">Artist</p>
-    <div class="progress-container"><div class="progress" id="fp-progress"></div></div>
-    <div id="volume-container">
-      <span>🔊</span>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-    </div>
+  <img src="" alt="cover" id="fp-cover">
+  <h2 id="fp-title" style="text-align:center;margin-top:15px;">Title</h2>
+  <p id="fp-artist" style="text-align:center;color:#fff;">Artist</p>
+  <div class="progress-container"><div class="progress" id="fp-progress"></div></div>
+  <div id="volume-container">
+    <span>🔊</span>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
   </div>
   <div class="controls">
     <svg id="fp-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
@@ -114,13 +123,14 @@ menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 
 // Audio
 const audio = new Audio();
+audio.volume = 1; // default volume
 let currentIndex = 0;
-let tracks = [];
+let tracks = songs; // from AudioRead.js
 
 const content = document.getElementById("content");
 const searchInput = document.getElementById("search");
 
-// Now Playing
+// Now Playing elements
 const npBar = document.getElementById("now-playing-bar");
 const npCover = document.getElementById("np-cover");
 const npTitle = document.getElementById("np-title");
@@ -129,7 +139,7 @@ const npPlay = document.getElementById("np-play");
 const npPrev = document.getElementById("np-prev");
 const npNext = document.getElementById("np-next");
 
-// Full player
+// Full Player elements
 const fp = document.getElementById("full-player");
 const fpCover = document.getElementById("fp-cover");
 const fpTitle = document.getElementById("fp-title");
@@ -139,11 +149,10 @@ const fpPrev = document.getElementById("fp-prev");
 const fpNext = document.getElementById("fp-next");
 const fpProgress = document.getElementById("fp-progress");
 const volumeSlider = document.getElementById("volume-slider");
+const fpBg = document.getElementById("full-player-bg");
 
-// Initialize tracks from AudioRead.js
-tracks = songs; // songs array from AudioRead.js
-
-function createTrackButtons() {
+// Create track buttons
+function createTrackButtons(){
   content.innerHTML = '';
   tracks.forEach((song,index)=>{
     const btn = document.createElement('div');
@@ -155,6 +164,7 @@ function createTrackButtons() {
   });
 }
 
+// Load song
 function loadSong(index){
   currentIndex = index;
   const song = tracks[index];
@@ -165,8 +175,10 @@ function loadSong(index){
   fpCover.src = song.cover;
   fpTitle.textContent = song.title;
   fpArtist.textContent = song.artist;
+  fpBg.style.backgroundImage = `url('${song.cover}')`;
 }
 
+// Play/Pause
 function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;}
 function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;}
 function prevSong(){currentIndex=(currentIndex-1+tracks.length)%tracks.length;loadSong(currentIndex);playSong();}
@@ -189,7 +201,7 @@ function showNowPlayingBar(){npBar.classList.remove("hidden");}
 npBar.addEventListener("click",()=>{fp.classList.add("show");});
 fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
 
-// Update progress
+// Progress update
 audio.addEventListener("timeupdate",()=>{
   const percent = (audio.currentTime/audio.duration)*100;
   fpProgress.style.width = percent+"%";
@@ -202,8 +214,8 @@ fp.querySelector(".progress-container").addEventListener("click",(e)=>{
   audio.currentTime = (clickX/width)*audio.duration;
 });
 
-// Volume control
-volumeSlider.addEventListener("input",(e)=>{audio.volume = e.target.value;});
+// Volume slider
+volumeSlider.addEventListener("input",(e)=>{audio.volume = parseFloat(e.target.value);});
 
 // Search
 searchInput.addEventListener('input',()=>{
