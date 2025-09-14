@@ -10,5 +10,11 @@ const songs = [
     artist: "Katseye",
     cover: "scripts/Katseyecovertouch.jpg", // relative to HTML
     src: "scripts/TouchCatseye.mp3" // relative to HTML
+  },
+   {
+    title: "Bring Me To Life",
+    artist: "Evanescence",
+    cover: "scripts/Bringmetolifecover.jpg", // relative to HTML
+    src: "scripts/BringMeTolife.mp3" // relative to HTML
   }
 ];
