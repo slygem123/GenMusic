@@ -191,6 +191,30 @@ audio.addEventListener("timeupdate",()=>{fpProgress.style.width=(audio.currentTi
 fp.querySelector(".progress-container").addEventListener("click",(e)=>{audio.currentTime=e.offsetX/e.currentTarget.clientWidth*audio.duration;});
 volumeSlider.addEventListener("input",(e)=>{audio.volume=parseFloat(e.target.value);});
 searchInput.addEventListener('input',()=>{const q=searchInput.value.toLowerCase();tracks.forEach(t=>{t.btn.style.display=t.title.toLowerCase().includes(q)||t.artist.toLowerCase().includes(q)?'flex':'none';});});
+<!-- Sidebar -->
+<div id="sidebar">
+  <div id="logo-frame">
+    <h1>GenMusic</h1>
+  </div>
+  <nav><a href="#">Library</a></nav>
+</div>
+
+<style>
+/* Sidebar logo frame (matching full-player style) */
+#logo-frame {
+  background: rgba(255,255,255,0.15); /* same frosted transparency */
+  backdrop-filter: blur(10px);         /* same blur as full-player cards */
+  border-radius: 16px;                 /* matching rounded corners */
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+  cursor:default;
+}
+#logo-frame:hover {transform:scale(1.03); box-shadow:0 6px 20px rgba(0,0,0,0.2);}
+#logo-frame:active {transform:scale(0.97);}
+#logo-frame h1 {margin:0; font-size:28px; font-weight:600; color:#fff;}
+</style>
 
 createTrackButtons();
 loadSong(0);
