@@ -8,7 +8,7 @@ const songs = [
     {
     title: "Touch",
     artist: "Katseye",
-    cover: "scripts/RomanReloadedCover.jpg", // relative to HTML
-    src: "scripts/RomanReloaded.mp3" // relative to HTML
+    cover: "scripts/Katseyecovertouch.jpg", // relative to HTML
+    src: "scripts/TouchCatseye.mp3" // relative to HTML
   }
 ];
