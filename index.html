@@ -5,59 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apple Music Clone</title>
 <style>
-  * {margin:0;padding:0;box-sizing:border-box;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
-  body {background:#fff;color:#000;overflow-x:hidden;}
+* {margin:0;padding:0;box-sizing:border-box;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+body {background:#fff;color:#000;overflow-x:hidden;position:relative;}
+button {cursor:pointer;background:none;border:none;padding:0;outline:none;}
 
-  /* Sidebar / Top Nav */
-  #sidebar {position:fixed;top:0;left:0;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;}
-  #sidebar h1 {font-size:24px;margin-bottom:30px;}
-  #sidebar nav a {text-decoration:none;color:#000;font-weight:500;margin:10px 0;display:block;transition:0.2s;}
-  #sidebar nav a:hover {color:#0071e3;}
+/* Sidebar */
+#sidebar {position:fixed;top:0;left:-250px;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;z-index:100;}
+#sidebar.show {left:0;}
+#sidebar h1 {font-size:24px;margin-bottom:30px;}
+#sidebar nav a {text-decoration:none;color:#000;font-weight:500;margin:10px 0;display:block;transition:0.2s;}
+#sidebar nav a:hover {color:#0071e3;transform:scale(1.05);}
 
-  #main {margin-left:250px;height:100vh;display:flex;flex-direction:column;transition:0.3s;}
-  #topbar {height:60px;border-bottom:1px solid #ccc;display:flex;align-items:center;padding:0 20px;justify-content:space-between;}
-  #search input {padding:6px 12px;border-radius:12px;border:1px solid #ccc;}
+/* Main */
+#main {margin-left:0;height:100vh;display:flex;flex-direction:column;transition:0.3s;}
+#topbar {height:60px;border-bottom:1px solid #ccc;display:flex;align-items:center;padding:0 20px;justify-content:space-between;}
+#search input {padding:6px 12px;border-radius:12px;border:1px solid #ccc;}
 
-  #content {flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:15px;}
+/* Albums grid */
+#content {flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:15px;}
+.album {background:#f2f2f7;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform 0.2s;}
+.album:hover {transform:scale(1.05);}
+.album img {width:100%;display:block;}
+.album-info {padding:10px;}
+.album-info h2 {font-size:14px;margin-bottom:3px;}
+.album-info p {font-size:12px;color:#555;}
 
-  .album {background:#f2f2f7;border-radius:12px;overflow:hidden;cursor:pointer;transition:0.2s;}
-  .album:hover {transform:scale(1.05);}
-  .album img {width:100%;display:block;}
-  .album-info {padding:10px;}
-  .album-info h2 {font-size:14px;margin-bottom:3px;}
-  .album-info p {font-size:12px;color:#555;}
+/* Now Playing mini bar */
+#now-playing-bar {position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #ccc;display:flex;align-items:center;padding:0 15px;justify-content:space-between;cursor:pointer;transition:transform 0.3s, opacity 0.3s;}
+#now-playing-bar.hidden {opacity:0;transform:translateY(100%);}
+#now-playing-bar .info {display:flex;align-items:center;gap:10px;}
+#now-playing-bar .info img {width:40px;height:40px;border-radius:6px;}
+#now-playing-bar .controls svg {width:24px;height:24px;fill:#000;transition:0.2s;}
+#now-playing-bar .controls svg:hover {fill:#0071e3;transform:scale(1.2);}
 
-  /* Player */
-  #player {position:fixed;bottom:0;left:250px;right:0;height:80px;background:#fff;border-top:1px solid #ccc;display:flex;align-items:center;padding:0 20px;justify-content:space-between;transition:0.3s;}
-  #player .info {display:flex;align-items:center;gap:10px;}
-  #player .info img {width:50px;height:50px;border-radius:6px;}
-  #player .controls {display:flex;align-items:center;gap:10px;}
-  #player button {background:none;border:none;font-size:20px;cursor:pointer;transition:0.2s;}
-  #player button:hover {color:#0071e3;}
-  #progress-container {flex:1;margin:0 10px;height:5px;background:#ddd;border-radius:2px;cursor:pointer;position:relative;}
-  #progress {height:100%;background:#0071e3;width:0%;border-radius:2px;}
+/* Full screen now playing */
+#full-player {position:fixed;top:100%;left:0;width:100%;height:100%;background:#fff;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;}
+#full-player.show {top:0;}
+#full-player img {width:100%;max-width:400px;margin:0 auto;border-radius:12px;}
+#full-player .controls {display:flex;justify-content:center;align-items:center;gap:30px;margin-top:20px;}
+#full-player .controls svg {width:40px;height:40px;fill:#000;transition:0.2s;}
+#full-player .controls svg:hover {fill:#0071e3;transform:scale(1.2);}
+#full-player .progress-container {width:100%;height:5px;background:#ddd;border-radius:2px;margin:20px 0;position:relative;cursor:pointer;}
+#full-player .progress {height:100%;background:#0071e3;width:0%;border-radius:2px;}
 
-  /* Mobile adjustments */
-  @media (max-width:768px){
-    #sidebar {position:fixed;left:-250px;top:0;height:100vh;z-index:100;background:#f5f5f7;}
-    #sidebar.show {left:0;}
-    #main {margin-left:0;}
-    #player {left:0;}
-    #topbar {padding:0 10px;}
-    #content {grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
-    #player .info img {width:40px;height:40px;}
-    #player {height:70px;padding:0 10px;}
-  }
-
-  #menu-toggle {display:none;font-size:24px;cursor:pointer;}
-  @media (max-width:768px){
+/* Mobile menu toggle */
+#menu-toggle {display:none;font-size:24px;cursor:pointer;}
+@media (max-width:768px){
     #menu-toggle {display:block;}
-  }
-
+    #content {grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+}
 </style>
 </head>
 <body>
 
+<!-- Sidebar -->
 <div id="sidebar">
   <h1>Music</h1>
   <nav>
@@ -68,130 +69,144 @@
   </nav>
 </div>
 
+<!-- Main -->
 <div id="main">
   <div id="topbar">
-    <span id="menu-toggle">☰</span>
+    <button id="menu-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"><path d="M3 6h18M3 12h18M3 18h18" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
     <h2>Browse</h2>
     <div id="search">
       <input type="text" placeholder="Search music...">
     </div>
   </div>
-
   <div id="content"></div>
 </div>
 
-<div id="player">
+<!-- Now Playing Mini Bar -->
+<div id="now-playing-bar" class="hidden">
   <div class="info">
-    <img src="" alt="cover" id="cover">
+    <img src="" alt="cover" id="np-cover">
     <div>
-      <div id="song-title">Title</div>
-      <div id="song-artist">Artist</div>
+      <div id="np-title">Title</div>
+      <div id="np-artist">Artist</div>
     </div>
   </div>
-  <div id="progress-container">
-    <div id="progress"></div>
+  <div class="controls">
+    <svg id="np-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
+    <svg id="np-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <svg id="np-next" viewBox="0 0 24 24"><path d="M13 6v12l8.5-6L13 6zm-1 0h-2v12h2z"/></svg>
+  </div>
+</div>
+
+<!-- Full Player -->
+<div id="full-player">
+  <div>
+    <img src="" alt="cover" id="fp-cover">
+    <h2 id="fp-title" style="text-align:center;margin-top:15px;">Title</h2>
+    <p id="fp-artist" style="text-align:center;color:#555;">Artist</p>
+    <div class="progress-container">
+      <div class="progress" id="fp-progress"></div>
+    </div>
   </div>
   <div class="controls">
-    <button id="prev">⏮</button>
-    <button id="play">▶️</button>
-    <button id="next">⏭</button>
+    <svg id="fp-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
+    <svg id="fp-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <svg id="fp-next" viewBox="0 0 24 24"><path d="M13 6v12l8.5-6L13 6zm-1 0h-2v12h2z"/></svg>
   </div>
 </div>
 
 <script>
+// Music data
 const music = [
-  {
-    title:"Dreams",
-    artist:"Joakim Karud",
-    cover:"https://i.ibb.co/6Rbc6Cw/cover1.jpg",
-    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-  },
-  {
-    title:"Sunny",
-    artist:"KODOMOi",
-    cover:"https://i.ibb.co/7V4v6sM/cover2.jpg",
-    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-  },
-  {
-    title:"Jazz in Paris",
-    artist:"Media Right Productions",
-    cover:"https://i.ibb.co/N6hgZ2d/cover3.jpg",
-    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-  }
+  {title:"Dreams", artist:"Joakim Karud", cover:"https://i.ibb.co/6Rbc6Cw/cover1.jpg", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
+  {title:"Sunny", artist:"KODOMOi", cover:"https://i.ibb.co/7V4v6sM/cover2.jpg", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
+  {title:"Jazz in Paris", artist:"Media Right Productions", cover:"https://i.ibb.co/N6hgZ2d/cover3.jpg", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"}
 ];
 
+// Populate albums
 const content = document.getElementById("content");
 music.forEach((song,index)=>{
   const div = document.createElement("div");
   div.classList.add("album");
-  div.innerHTML = `
-    <img src="${song.cover}" alt="${song.title}">
-    <div class="album-info">
-      <h2>${song.title}</h2>
-      <p>${song.artist}</p>
-    </div>
-  `;
-  div.addEventListener("click",()=>{loadSong(index);playSong();});
+  div.innerHTML = `<img src="${song.cover}"><div class="album-info"><h2>${song.title}</h2><p>${song.artist}</p></div>`;
+  div.addEventListener("click",()=>{loadSong(index);playSong();showNowPlayingBar();});
   content.appendChild(div);
 });
 
+// Audio setup
 const audio = new Audio();
 let currentIndex = 0;
 
-const cover = document.getElementById("cover");
-const titleEl = document.getElementById("song-title");
-const artistEl = document.getElementById("song-artist");
-const playBtn = document.getElementById("play");
-const prevBtn = document.getElementById("prev");
-const nextBtn = document.getElementById("next");
-const progress = document.getElementById("progress");
-const progressContainer = document.getElementById("progress-container");
+const npBar = document.getElementById("now-playing-bar");
+const npCover = document.getElementById("np-cover");
+const npTitle = document.getElementById("np-title");
+const npArtist = document.getElementById("np-artist");
+const npPlay = document.getElementById("np-play");
+const npPrev = document.getElementById("np-prev");
+const npNext = document.getElementById("np-next");
+
+const fp = document.getElementById("full-player");
+const fpCover = document.getElementById("fp-cover");
+const fpTitle = document.getElementById("fp-title");
+const fpArtist = document.getElementById("fp-artist");
+const fpPlay = document.getElementById("fp-play");
+const fpPrev = document.getElementById("fp-prev");
+const fpNext = document.getElementById("fp-next");
+const fpProgress = document.getElementById("fp-progress");
 
 function loadSong(index){
   currentIndex = index;
   const song = music[index];
   audio.src = song.src;
-  cover.src = song.cover;
-  titleEl.textContent = song.title;
-  artistEl.textContent = song.artist;
+  npCover.src = song.cover;
+  npTitle.textContent = song.title;
+  npArtist.textContent = song.artist;
+  fpCover.src = song.cover;
+  fpTitle.textContent = song.title;
+  fpArtist.textContent = song.artist;
 }
+function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;}
+function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;}
+function prevSong(){currentIndex=(currentIndex-1+music.length)%music.length;loadSong(currentIndex);playSong();}
+function nextSong(){currentIndex=(currentIndex+1)%music.length;loadSong(currentIndex);playSong();}
 
-function playSong(){audio.play();playBtn.textContent="⏸";}
-function pauseSong(){audio.pause();playBtn.textContent="▶️";}
+// Mini bar controls
+npPlay.addEventListener("click",e=>{e.stopPropagation();audio.paused?playSong():pauseSong();});
+npPrev.addEventListener("click",e=>{e.stopPropagation();prevSong();});
+npNext.addEventListener("click",e=>{e.stopPropagation();nextSong();});
 
-playBtn.addEventListener("click",()=>{
-  if(audio.paused){playSong();} else {pauseSong();}
-});
+// Full player controls
+fpPlay.addEventListener("click",()=>{audio.paused?playSong():pauseSong();});
+fpPrev.addEventListener("click",prevSong);
+fpNext.addEventListener("click",nextSong);
 
-prevBtn.addEventListener("click",()=>{
-  currentIndex = (currentIndex-1+music.length)%music.length;
-  loadSong(currentIndex);
-  playSong();
-});
-nextBtn.addEventListener("click",()=>{
-  currentIndex = (currentIndex+1)%music.length;
-  loadSong(currentIndex);
-  playSong();
-});
+// Show/hide mini bar
+function showNowPlayingBar(){npBar.classList.remove("hidden");}
+// Open full player
+npBar.addEventListener("click",()=>{fp.classList.add("show");});
+// Close full player by clicking outside album
+fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
 
+// Update progress
 audio.addEventListener("timeupdate",()=>{
   const percent = (audio.currentTime/audio.duration)*100;
-  progress.style.width = percent+"%";
+  fpProgress.style.width = percent+"%";
 });
 
-progressContainer.addEventListener("click",(e)=>{
-  const width = progressContainer.clientWidth;
+// Click progress to seek
+fp.querySelector(".progress-container").addEventListener("click",(e)=>{
+  const width = e.currentTarget.clientWidth;
   const clickX = e.offsetX;
   audio.currentTime = (clickX/width)*audio.duration;
 });
 
-// Mobile menu toggle
+// Sidebar toggle
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
-menuToggle.addEventListener("click",()=>{
-  sidebar.classList.toggle("show");
-});
+menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 
+// Load initial song
 loadSong(currentIndex);
 </script>
 
