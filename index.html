@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GenMusic Player</title>
 <style>
-/* Reset & base */
 * {margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-body {background:#fff;color:#000;overflow-x:hidden;position:relative;}
-button {cursor:pointer;background:none;border:none;outline:none;}
+body {color:#000;overflow-x:hidden;position:relative;transition:background 0.5s ease;}
 
 /* Sidebar */
 #sidebar {position:fixed;top:0;left:-250px;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;z-index:100;}
@@ -38,13 +36,8 @@ button {cursor:pointer;background:none;border:none;outline:none;}
 #now-playing-bar .controls svg:hover{fill:#0071e3;transform:scale(1.2);}
 
 /* Full screen player */
-#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:#fff;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;overflow-y:auto;}
+#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:transparent;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;overflow-y:auto;}
 #full-player.show{top:0;}
-#full-player-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;background-size:cover;background-position:center;filter:blur(30px) brightness(0.5);transition:background-image 0.5s ease;}
-#full-player-gradient{position:fixed;top:0;left:0;width:100%;height:100%;z-index:60;pointer-events:none;background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,45,85,0.3));mix-blend-mode:overlay;animation:gradientShift 10s infinite alternate;}
-@keyframes gradientShift{0%{background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,45,85,0.3));}50%{background:linear-gradient(120deg, rgba(255,45,85,0.3), rgba(255,149,0,0.3));}100%{background:linear-gradient(120deg, rgba(0,113,227,0.3), rgba(255,149,0,0.3));}}
-
-/* Full player content */
 #full-player img{display:block;margin:20px auto;width:80%;max-width:400px;border-radius:16px;object-fit:cover;transition:all 0.3s;}
 #full-player .controls{display:flex;justify-content:center;align-items:center;gap:40px;margin-top:25px;}
 #full-player .controls svg{width:44px;height:44px;fill:#000;transition:0.2s;}
@@ -62,10 +55,6 @@ button {cursor:pointer;background:none;border:none;outline:none;}
 </style>
 </head>
 <body>
-
-<!-- Background & Gradient -->
-<div id="full-player-bg"></div>
-<div id="full-player-gradient"></div>
 
 <!-- Sidebar -->
 <div id="sidebar">
@@ -116,21 +105,18 @@ button {cursor:pointer;background:none;border:none;outline:none;}
 
 <script src="scripts/AudioRead.js"></script>
 <script>
-// Sidebar toggle
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
 menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 
-// Audio
 const audio = new Audio();
-audio.volume = 1; // default volume
+audio.volume = 1;
 let currentIndex = 0;
-let tracks = songs; // from AudioRead.js
+let tracks = songs;
 
 const content = document.getElementById("content");
 const searchInput = document.getElementById("search");
 
-// Now Playing elements
 const npBar = document.getElementById("now-playing-bar");
 const npCover = document.getElementById("np-cover");
 const npTitle = document.getElementById("np-title");
@@ -139,7 +125,6 @@ const npPlay = document.getElementById("np-play");
 const npPrev = document.getElementById("np-prev");
 const npNext = document.getElementById("np-next");
 
-// Full Player elements
 const fp = document.getElementById("full-player");
 const fpCover = document.getElementById("fp-cover");
 const fpTitle = document.getElementById("fp-title");
@@ -149,9 +134,20 @@ const fpPrev = document.getElementById("fp-prev");
 const fpNext = document.getElementById("fp-next");
 const fpProgress = document.getElementById("fp-progress");
 const volumeSlider = document.getElementById("volume-slider");
-const fpBg = document.getElementById("full-player-bg");
 
-// Create track buttons
+// Preset gradients for songs (replace or generate dynamically if you want)
+const gradients = [
+  "linear-gradient(135deg, #0071e3, #00c6ff)",
+  "linear-gradient(135deg, #ff416c, #ff4b2b)",
+  "linear-gradient(135deg, #7f00ff, #e100ff)"
+];
+
+// Background update
+function updateBackground(index){
+  document.body.style.background = gradients[index % gradients.length];
+}
+
+// Track buttons
 function createTrackButtons(){
   content.innerHTML = '';
   tracks.forEach((song,index)=>{
@@ -164,7 +160,6 @@ function createTrackButtons(){
   });
 }
 
-// Load song
 function loadSong(index){
   currentIndex = index;
   const song = tracks[index];
@@ -175,55 +170,45 @@ function loadSong(index){
   fpCover.src = song.cover;
   fpTitle.textContent = song.title;
   fpArtist.textContent = song.artist;
-  fpBg.style.backgroundImage = `url('${song.cover}')`;
+  updateBackground(index);
 }
 
-// Play/Pause
 function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;}
 function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;}
 function prevSong(){currentIndex=(currentIndex-1+tracks.length)%tracks.length;loadSong(currentIndex);playSong();}
 function nextSong(){currentIndex=(currentIndex+1)%tracks.length;loadSong(currentIndex);playSong();}
 
-// Mini bar controls
 npPlay.addEventListener("click",e=>{e.stopPropagation();audio.paused?playSong():pauseSong();});
 npPrev.addEventListener("click",e=>{e.stopPropagation();prevSong();});
 npNext.addEventListener("click",e=>{e.stopPropagation();nextSong();});
 
-// Full player controls
 fpPlay.addEventListener("click",()=>{audio.paused?playSong():pauseSong();});
 fpPrev.addEventListener("click",prevSong);
 fpNext.addEventListener("click",nextSong);
 
-// Show mini bar
 function showNowPlayingBar(){npBar.classList.remove("hidden");}
 
-// Open full player
 npBar.addEventListener("click",()=>{fp.classList.add("show");});
 fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
 
-// Progress update
 audio.addEventListener("timeupdate",()=>{
   const percent = (audio.currentTime/audio.duration)*100;
   fpProgress.style.width = percent+"%";
 });
 
-// Click progress to seek
 fp.querySelector(".progress-container").addEventListener("click",(e)=>{
   const width = e.currentTarget.clientWidth;
   const clickX = e.offsetX;
   audio.currentTime = (clickX/width)*audio.duration;
 });
 
-// Volume slider
 volumeSlider.addEventListener("input",(e)=>{audio.volume = parseFloat(e.target.value);});
 
-// Search
 searchInput.addEventListener('input',()=>{
   const q = searchInput.value.toLowerCase();
   tracks.forEach(t=>{t.btn.style.display = t.title.toLowerCase().includes(q)||t.artist.toLowerCase().includes(q)?'flex':'none';});
 });
 
-// Init
 createTrackButtons();
 loadSong(0);
 </script>
