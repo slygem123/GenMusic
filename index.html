@@ -11,13 +11,10 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 /* Sidebar */
 #sidebar {position:fixed;top:0;left:-250px;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;z-index:100;}
 #sidebar.show{left:0;}
-
-/* Sidebar logo frame */
 #logo-frame {background: rgba(255,255,255,0.15);backdrop-filter: blur(10px);border-radius: 16px;padding: 14px 20px;margin-bottom: 20px;text-align: center;transition: transform 0.2s, box-shadow 0.2s;cursor: default;}
 #logo-frame:hover {transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,0.2);}
 #logo-frame:active {transform: scale(0.97);}
 #logo-frame h1 {margin:0; font-size:28px; font-weight:600; color:#fff;}
-
 #sidebar nav a{text-decoration:none;color:#000;font-weight:500;margin:12px 0;display:block;transition:0.2s;}
 #sidebar nav a:hover{color:#0071e3;transform:scale(1.05);}
 
@@ -34,11 +31,10 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 .track-button:hover{transform:scale(1.03);box-shadow:0 6px 20px rgba(0,0,0,0.2);}
 .track-button:active{transform:scale(0.97);}
 
-/* Now Playing Mini Bar (taller) */
+/* Now Playing Mini Bar */
 #now-playing-bar{position:fixed;bottom:0;left:0;right:0;height:72px;background: rgba(255,255,255,0.15);backdrop-filter: blur(10px);display:flex;align-items:center;padding:0 15px;justify-content:space-between;cursor:pointer;transition:transform 0.3s, opacity 0.3s;}
-#now-playing-bar.hidden{opacity:0;transform:translateY(100%);}
 #now-playing-bar .info{display:flex;align-items:center;gap:12px;}
-#now-playing-bar .info img{width:52px;height:52px;border-radius:8px;}
+#now-playing-bar .info img{width:52px;height:52px;border-radius:8px;transition: transform 0.5s linear;}
 #now-playing-bar .controls svg{width:28px;height:28px;fill:#fff;transition:0.2s;cursor:pointer;}
 #now-playing-bar .controls svg:hover{transform:scale(1.2);}
 
@@ -48,7 +44,7 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 #fp-frame {background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; max-width: 400px; width: 90%; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s;}
 #fp-frame:hover {transform: scale(1.02); box-shadow: 0 8px 25px rgba(0,0,0,0.25);}
 #fp-frame:active {transform: scale(0.98);}
-#fp-frame img {width:80%; max-width:300px; border-radius:16px; margin-bottom:15px;}
+#fp-frame img {width:80%; max-width:300px; border-radius:16px; margin-bottom:15px; transition: transform 0.5s linear;}
 #fp-frame h2 {margin:0;color:#fff;text-align:center;margin-bottom:5px;}
 #fp-frame p {color:#fff;text-align:center;margin-bottom:20px;}
 #fp-frame .progress-container {width:100%; height:6px; background:rgba(255,255,255,0.2); border-radius:3px; margin-bottom:15px; position:relative; cursor:pointer;}
@@ -86,8 +82,11 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 </div>
 
 <!-- Now Playing Mini Bar -->
-<div id="now-playing-bar" class="hidden">
-  <div class="info"><img src="" alt="cover" id="np-cover"><div><div id="np-title">Title</div><div id="np-artist">Artist</div></div></div>
+<div id="now-playing-bar">
+  <div class="info">
+    <img src="" alt="cover" id="np-cover">
+    <div><div id="np-title">Title</div><div id="np-artist">Artist</div></div>
+  </div>
   <div class="controls">
     <svg id="np-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
     <svg id="np-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -146,6 +145,19 @@ const fpNext=document.getElementById("fp-next");
 const fpProgress=document.getElementById("fp-progress");
 const volumeSlider=document.getElementById("volume-slider");
 
+let rotateInterval=null;
+
+function startRotate(){
+  clearInterval(rotateInterval);
+  let deg=0;
+  rotateInterval=setInterval(()=>{
+    deg+=1;
+    npCover.style.transform=`rotate(${deg}deg)`;
+    fpCover.style.transform=`rotate(${deg}deg)`;
+  },20);
+}
+function stopRotate(){clearInterval(rotateInterval);}
+
 function createTrackButtonsByArtist(){
   content.innerHTML='';
   const artistsMap={};
@@ -170,7 +182,11 @@ function createTrackButtonsByArtist(){
       const btn=document.createElement('div');
       btn.classList.add('track-button');
       btn.innerHTML=`<img src="${song.cover}" alt="cover"><div>${song.title}</div>`;
-      btn.addEventListener('click',()=>{loadSong(song.index);playSong();showNowPlayingBar();});
+      btn.addEventListener('click',()=>{
+        loadSong(song.index);
+        playSong();
+        showNowPlayingBar();
+      });
       list.appendChild(btn);
       song.btn=btn;
     });
@@ -192,8 +208,20 @@ function loadSong(index){
   fpArtist.textContent=song.artist;
 }
 
-function playSong(){audio.play();npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;fpPlay.innerHTML=npPlay.innerHTML;}
-function pauseSong(){audio.pause();npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;fpPlay.innerHTML=npPlay.innerHTML;}
+function playSong(){
+  audio.play();
+  npPlay.innerHTML=`<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+  fpPlay.innerHTML=npPlay.innerHTML;
+  startRotate();
+}
+
+function pauseSong(){
+  audio.pause();
+  npPlay.innerHTML=`<path d="M8 5v14l11-7z"/>`;
+  fpPlay.innerHTML=npPlay.innerHTML;
+  stopRotate();
+}
+
 function prevSong(){currentIndex=(currentIndex-1+tracks.length)%tracks.length;loadSong(currentIndex);playSong();}
 function nextSong(){currentIndex=(currentIndex+1)%tracks.length;loadSong(currentIndex);playSong();}
 
@@ -211,6 +239,8 @@ audio.addEventListener("timeupdate",()=>{fpProgress.style.width=(audio.currentTi
 fp.querySelector(".progress-container").addEventListener("click",(e)=>{audio.currentTime=(e.offsetX/e.currentTarget.clientWidth)*audio.duration;});
 volumeSlider.addEventListener("input",(e)=>{audio.volume=e.target.value;});
 
+function showNowPlayingBar(){npBar.style.opacity="1";}
+
 searchInput.addEventListener('input',()=>{
   const q=searchInput.value.toLowerCase();
   tracks.forEach(t=>{
@@ -220,6 +250,7 @@ searchInput.addEventListener('input',()=>{
 
 createTrackButtonsByArtist();
 loadSong(0);
+showNowPlayingBar();
 </script>
 </body>
 </html>
