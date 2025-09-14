@@ -1,5 +1,4 @@
-
-const songs = [
+ songs = [
   {
     title: "Dreams",
     artist: "Joakim Karud",
