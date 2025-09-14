@@ -1,187 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Music App</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: "Helvetica Neue", sans-serif;
-      background: linear-gradient(135deg, #1e1e1e, #3c3c3c);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Music Clone</title>
+<style>
+  /* Reset */
+  * {margin:0;padding:0;box-sizing:border-box;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+  body {background:#fff;color:#000;overflow:hidden;}
 
-    header {
-      padding: 20px;
-      font-size: 24px;
-      font-weight: bold;
-      text-align: center;
-    }
+  /* Sidebar */
+  #sidebar {position:fixed;top:0;left:0;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;}
+  #sidebar h1 {font-size:24px;margin-bottom:30px;}
+  #sidebar nav a {text-decoration:none;color:#000;font-weight:500;margin:10px 0;display:block;transition:0.2s;}
+  #sidebar nav a:hover {color:#0071e3;}
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      padding: 0 15px 20px 15px;
-    }
+  /* Main content */
+  #main {margin-left:250px;height:100vh;display:flex;flex-direction:column;}
+  #topbar {height:60px;border-bottom:1px solid #ccc;display:flex;align-items:center;padding:0 20px;}
+  #search {margin-left:auto;}
+  #search input {padding:6px 12px;border-radius:12px;border:1px solid #ccc;}
 
-    .card {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(15px);
-      border-radius: 20px;
-      padding: 15px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-    }
+  #content {flex:1;overflow-y:auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;}
 
-    .card img {
-      width: 100%;
-      border-radius: 15px;
-      margin-bottom: 10px;
-    }
+  .album {background:#f2f2f7;border-radius:12px;overflow:hidden;cursor:pointer;transition:0.2s;}
+  .album:hover {transform:scale(1.05);}
+  .album img {width:100%;display:block;}
+  .album-info {padding:10px;}
+  .album-info h2 {font-size:16px;margin-bottom:5px;}
+  .album-info p {font-size:12px;color:#555;}
 
-    .card:hover {
-      transform: scale(1.05);
-      background: rgba(255,255,255,0.2);
-    }
-
-    .playlist {
-      padding: 0 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 70vh;
-      overflow-y: auto;
-      margin-bottom: 20px;
-    }
-
-    .song {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      padding: 10px 15px;
-      border-radius: 15px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .song:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .song button {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    .back-button {
-      margin: 15px;
-      background: rgba(255,255,255,0.2);
-      border: none;
-      border-radius: 15px;
-      padding: 10px 15px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .back-button:hover {
-      background: rgba(255,255,255,0.3);
-    }
-  </style>
+  /* Player */
+  #player {position:fixed;bottom:0;left:250px;right:0;height:80px;background:#fff;border-top:1px solid #ccc;display:flex;align-items:center;padding:0 20px;justify-content:space-between;}
+  #player .info {display:flex;align-items:center;gap:15px;}
+  #player .info img {width:50px;height:50px;border-radius:6px;}
+  #player .controls {display:flex;align-items:center;gap:15px;}
+  #player button {background:none;border:none;font-size:20px;cursor:pointer;transition:0.2s;}
+  #player button:hover {color:#0071e3;}
+  #progress-container {flex:1;margin:0 20px;height:5px;background:#ddd;border-radius:2px;cursor:pointer;position:relative;}
+  #progress {height:100%;background:#0071e3;width:0%;border-radius:2px;}
+</style>
 </head>
 <body>
 
-  <header>My Music App</header>
+<div id="sidebar">
+  <h1>Music</h1>
+  <nav>
+    <a href="#">Listen Now</a>
+    <a href="#">Browse</a>
+    <a href="#">Radio</a>
+    <a href="#">Library</a>
+  </nav>
+</div>
 
-  <div id="home" class="grid">
-    <div class="card" onclick="openSection('billie')">
-      <img src="billie.jpg" alt="Billie Eilish">
-      Billie Eilish
-    </div>
-    <div class="card" onclick="openSection('liked')">
-      <img src="liked.jpg" alt="Liked Songs">
-      Liked Songs
-    </div>
-    <div class="card" onclick="openSection('ayesha')">
-      <img src="ayesha.jpg" alt="Ayesha Erotica">
-      Ayesha Erotica
-    </div>
-    <div class="card" onclick="openSection('melanie')">
-      <img src="melanie.jpg" alt="Melanie Martinez">
-      Melanie Martinez
+<div id="main">
+  <div id="topbar">
+    <h2>Browse</h2>
+    <div id="search">
+      <input type="text" placeholder="Search music...">
     </div>
   </div>
 
-  <div id="artistPage" style="display:none; flex-direction: column;">
-    <button class="back-button" onclick="goHome()">⬅ Back</button>
-    <h2 id="artistTitle" style="text-align:center; margin:10px 0;"></h2>
-    <div class="playlist" id="playlist"></div>
+  <div id="content">
+    <!-- Albums will be inserted here dynamically -->
   </div>
+</div>
 
-  <audio id="audio"></audio>
+<div id="player">
+  <div class="info">
+    <img src="" alt="cover" id="cover">
+    <div>
+      <div id="song-title">Title</div>
+      <div id="song-artist">Artist</div>
+    </div>
+  </div>
+  <div id="progress-container">
+    <div id="progress"></div>
+  </div>
+  <div class="controls">
+    <button id="prev">⏮</button>
+    <button id="play">▶️</button>
+    <button id="next">⏭</button>
+  </div>
+</div>
 
-  <script>
-    const sections = {
-      billie: [
-        { title: "bad guy", file: "badguy.mp3" },
-        { title: "bury a friend", file: "buryafriend.mp3" }
-      ],
-      ayesha: [
-        { title: "lick it", file: "lickit.mp3" },
-        { title: "daddy", file: "daddy.mp3" }
-      ],
-      melanie: [
-        { title: "cry baby", file: "crybaby.mp3" },
-        { title: "pity party", file: "pityparty.mp3" }
-      ],
-      liked: [
-        { title: "favorite 1", file: "fav1.mp3" },
-        { title: "favorite 2", file: "fav2.mp3" }
-      ]
-    };
+<script>
+const music = [
+  {
+    title:"Dreams",
+    artist:"Joakim Karud",
+    cover:"https://i.ibb.co/6Rbc6Cw/cover1.jpg",
+    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+  },
+  {
+    title:"Sunny",
+    artist:"KODOMOi",
+    cover:"https://i.ibb.co/7V4v6sM/cover2.jpg",
+    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+  },
+  {
+    title:"Jazz in Paris",
+    artist:"Media Right Productions",
+    cover:"https://i.ibb.co/N6hgZ2d/cover3.jpg",
+    src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+  }
+];
 
-    function openSection(name) {
-      document.getElementById("home").style.display = "none";
-      document.getElementById("artistPage").style.display = "flex";
-      document.getElementById("artistTitle").innerText = name.charAt(0).toUpperCase() + name.slice(1);
-      const playlistDiv = document.getElementById("playlist");
-      playlistDiv.innerHTML = "";
+const content = document.getElementById("content");
+music.forEach((song,index)=>{
+  const div = document.createElement("div");
+  div.classList.add("album");
+  div.innerHTML = `
+    <img src="${song.cover}" alt="${song.title}">
+    <div class="album-info">
+      <h2>${song.title}</h2>
+      <p>${song.artist}</p>
+    </div>
+  `;
+  div.addEventListener("click",()=>{loadSong(index);playSong();});
+  content.appendChild(div);
+});
 
-      sections[name].forEach(song => {
-        const div = document.createElement("div");
-        div.className = "song";
-        div.innerHTML = `<span>${song.title}</span> <button onclick="playSong('${song.file}')">▶️</button>`;
-        playlistDiv.appendChild(div);
-      });
-    }
+const audio = new Audio();
+let currentIndex = 0;
 
-    function goHome() {
-      document.getElementById("artistPage").style.display = "none";
-      document.getElementById("home").style.display = "grid";
-      document.getElementById("audio").pause();
-    }
+const cover = document.getElementById("cover");
+const titleEl = document.getElementById("song-title");
+const artistEl = document.getElementById("song-artist");
+const playBtn = document.getElementById("play");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+const progress = document.getElementById("progress");
+const progressContainer = document.getElementById("progress-container");
 
-    function playSong(file) {
-      const audio = document.getElementById("audio");
-      audio.src = file;
-      audio.play();
-    }
-  </script>
+function loadSong(index){
+  currentIndex = index;
+  const song = music[index];
+  audio.src = song.src;
+  cover.src = song.cover;
+  titleEl.textContent = song.title;
+  artistEl.textContent = song.artist;
+}
+
+function playSong(){audio.play();playBtn.textContent="⏸";}
+function pauseSong(){audio.pause();playBtn.textContent="▶️";}
+
+playBtn.addEventListener("click",()=>{
+  if(audio.paused){playSong();} else {pauseSong();}
+});
+
+prevBtn.addEventListener("click",()=>{
+  currentIndex = (currentIndex-1+music.length)%music.length;
+  loadSong(currentIndex);
+  playSong();
+});
+nextBtn.addEventListener("click",()=>{
+  currentIndex = (currentIndex+1)%music.length;
+  loadSong(currentIndex);
+  playSong();
+});
+
+audio.addEventListener("timeupdate",()=>{
+  const percent = (audio.currentTime/audio.duration)*100;
+  progress.style.width = percent+"%";
+});
+
+progressContainer.addEventListener("click",(e)=>{
+  const width = progressContainer.clientWidth;
+  const clickX = e.offsetX;
+  audio.currentTime = (clickX/width)*audio.duration;
+});
+
+loadSong(currentIndex);
+</script>
 
 </body>
 </html>
