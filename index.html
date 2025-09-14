@@ -103,20 +103,17 @@ button {cursor:pointer;background:none;border:none;padding:0;outline:none;}
 <script src="scripts/AudioRead.js"></script>
 
 <script>
+let audio; // create Audio object on first click
+
 // Sidebar toggle
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
 menuToggle.addEventListener("click",()=>{sidebar.classList.toggle("show");});
 
-// Audio
-const audio = new Audio();
-let currentIndex = 0;
-let tracks = songs || []; // Use the songs from AudioRead.js
-
+// UI elements
 const content = document.getElementById("content");
 const searchInput = document.getElementById("search");
 
-// Now Playing
 const npBar = document.getElementById("now-playing-bar");
 const npCover = document.getElementById("np-cover");
 const npTitle = document.getElementById("np-title");
@@ -125,7 +122,6 @@ const npPlay = document.getElementById("np-play");
 const npPrev = document.getElementById("np-prev");
 const npNext = document.getElementById("np-next");
 
-// Full player
 const fp = document.getElementById("full-player");
 const fpCover = document.getElementById("fp-cover");
 const fpTitle = document.getElementById("fp-title");
@@ -135,6 +131,9 @@ const fpPrev = document.getElementById("fp-prev");
 const fpNext = document.getElementById("fp-next");
 const fpProgress = document.getElementById("fp-progress");
 
+let currentIndex = 0;
+let tracks = songs || [];
+
 // Render track buttons
 function renderTracks(trackList){
   content.innerHTML = '';
@@ -142,7 +141,12 @@ function renderTracks(trackList){
     const btn = document.createElement('div');
     btn.classList.add('track-button');
     btn.textContent = `${t.title} - ${t.artist}`;
-    btn.addEventListener('click',()=>{loadSong(index);playSong();showNowPlayingBar();});
+    btn.addEventListener('click', ()=>{
+        if(!audio) audio = new Audio();
+        loadSong(index);
+        playSong();
+        showNowPlayingBar();
+    });
     content.appendChild(btn);
     t.btn = btn;
   });
@@ -185,7 +189,7 @@ npBar.addEventListener("click",()=>{fp.classList.add("show");});
 fp.addEventListener("click",(e)=>{if(e.target===fp){fp.classList.remove("show");}});
 
 // Update progress
-audio.addEventListener("timeupdate",()=>{
+audio?.addEventListener("timeupdate",()=>{
   const percent = (audio.currentTime/audio.duration)*100 || 0;
   fpProgress.style.width = percent+"%";
 });
@@ -195,7 +199,7 @@ fp.querySelector(".progress-container").addEventListener("click",(e)=>{
   audio.currentTime = (clickX/width)*audio.duration;
 });
 
-// Search functionality
+// Search
 searchInput.addEventListener('input',()=>{
   const q = searchInput.value.toLowerCase();
   tracks.forEach(t=>{
