@@ -133,7 +133,7 @@ const fpNext = document.getElementById("fp-next");
 const fpProgress = document.getElementById("fp-progress");
 
 // Load songs.json
-fetch('AudioRead/songs.json')
+fetch('scripts/AudioRead.js')
   .then(res=>res.json())
   .then(data=>{
     tracks = data || [];
