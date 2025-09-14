@@ -12,7 +12,22 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 /* Sidebar */
 #sidebar {position:fixed;top:0;left:-250px;width:250px;height:100vh;background:#f5f5f7;border-right:1px solid #ccc;padding:20px;display:flex;flex-direction:column;transition:0.3s;z-index:100;}
 #sidebar.show{left:0;}
-#sidebar h1{font-size:28px;margin-bottom:30px;font-weight:600;}
+
+/* Sidebar logo frame */
+#logo-frame {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+#logo-frame:hover {transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,0.2);}
+#logo-frame:active {transform: scale(0.97);}
+#logo-frame h1 {margin:0; font-size:28px; font-weight:600; color:#fff;}
+
 #sidebar nav a{text-decoration:none;color:#000;font-weight:500;margin:12px 0;display:block;transition:0.2s;}
 #sidebar nav a:hover{color:#0071e3;transform:scale(1.05);}
 
@@ -42,18 +57,41 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 #now-playing-bar .controls svg:hover{transform:scale(1.2);}
 
 /* Full screen player */
-#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:transparent;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:space-between;padding:20px;overflow-y:auto;}
+#full-player{position:fixed;top:100%;left:0;width:100%;height:100%;background:transparent;z-index:200;transition:top 0.4s ease-in-out;display:flex;flex-direction:column;justify-content:flex-start;padding:20px;overflow-y:auto;}
 #full-player.show{top:0;}
-#full-player img{display:block;margin:20px auto;width:80%;max-width:400px;border-radius:16px;object-fit:cover;transition:all 0.3s;}
-#full-player .controls{display:flex;justify-content:center;align-items:center;gap:40px;margin-top:25px;}
-#full-player .controls svg{width:44px;height:44px;fill:#fff;transition:0.2s;cursor:pointer;}
-#full-player .controls svg:hover{transform:scale(1.2);}
-#full-player .progress-container{width:100%;height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin:20px 0;position:relative;cursor:pointer;}
-#full-player .progress{height:100%;background:#fff;width:0%;border-radius:3px;transition:width 0.1s linear;}
-#volume-container{display:flex;align-items:center;gap:10px;margin-top:10px;background: rgba(255,255,255,0.15);backdrop-filter: blur(10px);border-radius:12px;padding:6px;}
+
+/* Frosted frame behind full player content */
+#fp-frame {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 40px auto;
+  max-width: 450px;
+  width: 90%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#fp-frame:hover{transform:scale(1.02);box-shadow:0 8px 25px rgba(0,0,0,0.25);}
+#fp-frame:active{transform:scale(0.98);}
+
+/* Full-player content inside frame */
+#fp-frame img{width:80%;max-width:300px;border-radius:16px;margin-bottom:15px;}
+#fp-frame h2{margin:0;color:#fff;text-align:center;margin-bottom:5px;}
+#fp-frame p{color:#fff;text-align:center;margin-bottom:20px;}
+#fp-frame .progress-container{width:100%;height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin-bottom:15px;position:relative;cursor:pointer;}
+#fp-frame .progress{height:100%;background:#fff;width:0%;border-radius:3px;transition:width 0.1s linear;}
+#volume-container{display:flex;align-items:center;gap:10px;margin-bottom:20px;background: rgba(255,255,255,0.15);backdrop-filter: blur(10px);border-radius:12px;padding:6px;width:80%;}
 #volume-slider{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;background:rgba(255,255,255,0.3);outline:none;transition:all 0.2s;cursor:pointer;}
 #volume-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#fff;border-radius:50%;cursor:pointer;transition:all 0.2s;}
 #volume-slider::-moz-range-thumb{width:16px;height:16px;background:#fff;border-radius:50%;cursor:pointer;}
+
+/* Full-player controls */
+#fp-frame .controls{display:flex;justify-content:center;align-items:center;gap:40px;}
+#fp-frame .controls svg{width:44px;height:44px;fill:#fff;transition:0.2s;cursor:pointer;}
+#fp-frame .controls svg:hover{transform:scale(1.2);}
 
 /* Mobile menu toggle */
 #menu-toggle{display:none;font-size:28px;cursor:pointer;}
@@ -64,7 +102,9 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 
 <!-- Sidebar -->
 <div id="sidebar">
-  <h1>GenMusic</h1>
+  <div id="logo-frame">
+    <h1>GenMusic</h1>
+  </div>
   <nav><a href="#">Library</a></nav>
 </div>
 
@@ -94,18 +134,20 @@ body {color:#fff;overflow-x:hidden;position:relative;transition:background 0.5s 
 
 <!-- Full Player -->
 <div id="full-player">
-  <img src="" alt="cover" id="fp-cover">
-  <h2 id="fp-title" style="text-align:center;margin-top:15px;">Title</h2>
-  <p id="fp-artist" style="text-align:center;color:#fff;">Artist</p>
-  <div class="progress-container"><div class="progress" id="fp-progress"></div></div>
-  <div id="volume-container">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" stroke="#fff" stroke-width="2" d="M9 9v6h4l5 5V4l-5 5H9z"/></svg>
-    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-  </div>
-  <div class="controls">
-    <svg id="fp-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
-    <svg id="fp-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-    <svg id="fp-next" viewBox="0 0 24 24"><path d="M13 6v12l8.5-6L13 6zm-1 0h-2v12h2z"/></svg>
+  <div id="fp-frame">
+    <img src="" alt="cover" id="fp-cover">
+    <h2 id="fp-title">Title</h2>
+    <p id="fp-artist">Artist</p>
+    <div class="progress-container"><div class="progress" id="fp-progress"></div></div>
+    <div id="volume-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" stroke="#fff" stroke-width="2" d="M9 9v6h4l5 5V4l-5 5H9z"/></svg>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    </div>
+    <div class="controls">
+      <svg id="fp-prev" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6L11 18zm1-12h2v12h-2z"/></svg>
+      <svg id="fp-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="fp-next" viewBox="0 0 24 24"><path d="M13 6v12l8.5-6L13 6zm-1 0h-2v12h2z"/></svg>
+    </div>
   </div>
 </div>
 
@@ -191,30 +233,6 @@ audio.addEventListener("timeupdate",()=>{fpProgress.style.width=(audio.currentTi
 fp.querySelector(".progress-container").addEventListener("click",(e)=>{audio.currentTime=e.offsetX/e.currentTarget.clientWidth*audio.duration;});
 volumeSlider.addEventListener("input",(e)=>{audio.volume=parseFloat(e.target.value);});
 searchInput.addEventListener('input',()=>{const q=searchInput.value.toLowerCase();tracks.forEach(t=>{t.btn.style.display=t.title.toLowerCase().includes(q)||t.artist.toLowerCase().includes(q)?'flex':'none';});});
-<!-- Sidebar -->
-<div id="sidebar">
-  <div id="logo-frame">
-    <h1>GenMusic</h1>
-  </div>
-  <nav><a href="#">Library</a></nav>
-</div>
-
-<style>
-/* Sidebar logo frame (matching full-player style) */
-#logo-frame {
-  background: rgba(255,255,255,0.15); /* same frosted transparency */
-  backdrop-filter: blur(10px);         /* same blur as full-player cards */
-  border-radius: 16px;                 /* matching rounded corners */
-  padding: 14px 20px;
-  margin-bottom: 20px;
-  text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
-  cursor:default;
-}
-#logo-frame:hover {transform:scale(1.03); box-shadow:0 6px 20px rgba(0,0,0,0.2);}
-#logo-frame:active {transform:scale(0.97);}
-#logo-frame h1 {margin:0; font-size:28px; font-weight:600; color:#fff;}
-</style>
 
 createTrackButtons();
 loadSong(0);
