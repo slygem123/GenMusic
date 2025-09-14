@@ -1,4 +1,4 @@
-// scripts/AudioRead.js
+
 const songs = [
   {
     title: "Dreams",
