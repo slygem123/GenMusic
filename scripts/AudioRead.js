@@ -1,7 +1,7 @@
 const songs = [
   {
-    title: "Dreams",
-    artist: "Joakim Karud",
+    title: "Roman Reloaded",
+    artist: "Nicki Minaj",
     cover: "scripts/RomanReloadedCover.jpg", // relative to HTML
     src: "scripts/RomanReloaded.mp3" // relative to HTML
   }
